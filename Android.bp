@@ -19,8 +19,10 @@ cc_library_headers {
     name: "libion_headers",
     defaults: ["libion_defaults"],
     host_supported: true,
-    export_include_dirs: [
-        "include",
+    export_include_dirs: select(soong_config_variable("libion", "legacy_impl"), {
+        true: ["include_legacy"],
+        default: ["include"],
+    }) + [
         "kernel-headers",
     ],
 }
@@ -29,8 +31,15 @@ cc_library {
     name: "libion",
     defaults: ["libion_defaults"],
     double_loadable: true,
-    srcs: ["ion.c"],
+    srcs: select(soong_config_variable("libion", "legacy_impl"), {
+        true: ["ion_legacy.c"],
+        default: ["ion.c"],
+    }),
     header_libs: ["libion_headers"],
     export_header_lib_headers: ["libion_headers"],
+    shared_libs: select(soong_config_variable("libion", "legacy_impl"), {
+        true: ["liblog"],
+        default: [],
+    }),
     cflags: ["-Werror"],
 }
